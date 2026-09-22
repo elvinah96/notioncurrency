@@ -3,20 +3,21 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>USD Exchange — East &amp; Southern Africa</title>
+<title>Quick Currency Overview</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg: #12172b;
-    --bg-raised: #171e38;
-    --hairline: rgba(214, 169, 74, 0.18);
-    --ink: #f1ede2;
-    --ink-dim: #9aa3c2;
-    --gold: #d6a94a;
-    --sage: #7fa98c;
-    --err: #d97b6c;
+    --frame: #12172b;
+    --bg: #ffffff;
+    --bg-raised: #f4f5f9;
+    --hairline: rgba(18, 23, 43, 0.12);
+    --ink: #12172b;
+    --ink-dim: #6b7280;
+    --gold: #9c6f14;
+    --sage: #2f6b4c;
+    --err: #b8352a;
   }
   *{ box-sizing: border-box; }
   html, body{
@@ -28,79 +29,118 @@
     -webkit-font-smoothing: antialiased;
   }
   body{
-    padding: clamp(20px, 5vw, 40px);
+    padding: clamp(16px, 4vw, 32px);
     min-height: 100vh;
+    display: flex;
   }
   .board{
     max-width: 640px;
+    width: 100%;
     margin: 0 auto;
+    border: 6px solid var(--frame);
+    border-radius: 18px;
+    padding: clamp(18px, 4vw, 28px);
   }
   header{
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    margin-bottom: 28px;
+    margin-bottom: 18px;
   }
   h1{
     font-family: 'Fraunces', serif;
     font-weight: 500;
     font-optical-sizing: auto;
-    font-size: clamp(26px, 4.2vw, 34px);
+    font-size: clamp(24px, 4vw, 30px);
     line-height: 1.15;
     margin: 0;
     color: var(--ink);
   }
-  .subtitle{
-    color: var(--ink-dim);
-    font-size: 13px;
-    line-height: 1.5;
-    max-width: 46ch;
+
+  .converter{
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 6px;
+    background: var(--bg-raised);
+    border: 1px solid var(--hairline);
+    border-radius: 10px;
+    padding: 8px 10px;
+    margin-bottom: 14px;
+    font-size: 12.5px;
   }
+  .converter input, .converter select{
+    font-family: inherit;
+    font-size: 12.5px;
+    color: var(--ink);
+    background: var(--bg);
+    border: 1px solid var(--hairline);
+    border-radius: 6px;
+    padding: 4px 6px;
+  }
+  .converter input{ width: 52px; flex: 0 0 auto; }
+  .converter select{
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 130px;
+    width: auto;
+    padding-right: 4px;
+  }
+  .converter input:focus, .converter select:focus{
+    outline: none;
+    border-color: var(--frame);
+  }
+  .converter .eq{ color: var(--ink-dim); flex: 0 0 auto; }
+  .converter-result{
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+    color: var(--gold);
+    font-size: 14px;
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   .meta-row{
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-top: 16px;
-    padding-top: 14px;
+    justify-content: flex-end;
+    gap: 6px;
+    padding-top: 10px;
+    padding-bottom: 4px;
     border-top: 1px solid var(--hairline);
   }
   .updated{
-    font-size: 11px;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    font-size: 8.5px;
     color: var(--ink-dim);
     letter-spacing: 0.01em;
   }
-  .updated .stale{ color: var(--err); }
+  .updated svg{ width: 9px; height: 9px; flex-shrink: 0; }
+  .updated.stale{ color: var(--err); }
   button#refresh{
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 3px;
     background: transparent;
     border: 1px solid var(--hairline);
     color: var(--ink);
     font-family: inherit;
-    font-size: 11px;
-    padding: 7px 12px;
-    border-radius: 3px;
+    font-size: 8px;
+    padding: 2px 5px;
+    border-radius: 4px;
     cursor: pointer;
     transition: border-color 0.15s ease, color 0.15s ease;
   }
   button#refresh:hover{ border-color: var(--gold); color: var(--gold); }
   button#refresh:focus-visible{ outline: 2px solid var(--gold); outline-offset: 2px; }
   button#refresh svg{
-    width: 12px; height: 12px;
+    width: 7px; height: 7px;
     transition: transform 0.5s ease;
   }
   button#refresh.spinning svg{ animation: spin 0.8s linear infinite; }
   @keyframes spin{ to{ transform: rotate(360deg); } }
-
-  .region{
-    font-size: 11px;
-    color: var(--sage);
-    margin: 22px 0 6px;
-    padding-bottom: 6px;
-  }
-  .region:first-of-type{ margin-top: 4px; }
 
   ul.rates{
     list-style: none;
@@ -109,44 +149,64 @@
   }
   li.rate-row{
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: auto 1fr auto;
     align-items: baseline;
-    gap: 4px 16px;
-    padding: 13px 0;
+    column-gap: 6px;
+    padding: 6px 0;
     border-bottom: 1px solid var(--hairline);
   }
   li.rate-row:last-child{ border-bottom: none; }
   .names{
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
     min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .curr-name{
     font-size: 14px;
     color: var(--ink);
   }
-  .curr-code{
-    font-size: 11px;
-    color: var(--ink-dim);
-    letter-spacing: 0.03em;
+  .leader{
+    border-bottom: 1px dotted var(--hairline);
+    margin-bottom: 4px;
+    height: 0;
+    min-width: 12px;
   }
   .value{
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: baseline;
+    column-gap: 4px;
     font-variant-numeric: tabular-nums;
     font-weight: 600;
-    font-size: clamp(18px, 3.4vw, 22px);
+    font-size: clamp(15px, 2.8vw, 18px);
     color: var(--gold);
+    width: 132px;
+    justify-self: end;
+  }
+  .value .prefix{
+    font-size: 10px;
+    font-weight: 400;
+    color: var(--ink-dim);
+    text-align: left;
+    white-space: nowrap;
+  }
+  .value .num{
     text-align: right;
     white-space: nowrap;
   }
   .value .unit{
-    font-size: 11px;
+    font-size: 10px;
     font-weight: 400;
     color: var(--ink-dim);
-    margin-left: 4px;
+    text-align: left;
+    white-space: nowrap;
   }
   .value.unavailable{
-    font-size: 12px;
+    display: block;
+    width: auto;
+    max-width: 200px;
+    font-size: 11px;
     font-weight: 400;
     color: var(--ink-dim);
     font-style: normal;
@@ -155,51 +215,48 @@
 
   .skeleton{
     display: inline-block;
+    grid-column: 1 / -1;
     width: 84px;
     height: 18px;
-    background: linear-gradient(90deg, var(--bg-raised) 0%, rgba(255,255,255,0.06) 50%, var(--bg-raised) 100%);
+    background: linear-gradient(90deg, var(--bg-raised) 0%, rgba(18,23,43,0.06) 50%, var(--bg-raised) 100%);
     background-size: 200% 100%;
     animation: shimmer 1.2s ease infinite;
     border-radius: 2px;
+    justify-self: end;
   }
   @keyframes shimmer{ 0%{ background-position: 200% 0; } 100%{ background-position: -200% 0; } }
 
-  footer{
-    margin-top: 26px;
-    padding-top: 14px;
-    border-top: 1px solid var(--hairline);
-    font-size: 10.5px;
-    color: var(--ink-dim);
-    line-height: 1.6;
-  }
-  footer a{ color: var(--sage); }
-
   @media (max-width: 420px){
+    .value{ width: 108px; }
     .curr-name{ font-size: 13px; }
-    .value{ font-size: 17px; }
+    .value{ font-size: 15px; }
+    .converter-row{ flex-direction: column; }
   }
 </style>
 </head>
 <body>
   <div class="board">
     <header>
-      <h1>US Dollar, converted</h1>
-      <div class="subtitle">Quoted per one US dollar.</div>
-      <div class="meta-row">
-        <div class="updated" id="updated">Loading rates…</div>
-        <button id="refresh" type="button" aria-label="Refresh rates">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
-          Refresh
-        </button>
-      </div>
+      <h1>Quick currency overview</h1>
     </header>
 
-    <div id="content"></div>
+    <div class="converter">
+      <input id="calcAmount" type="number" inputmode="decimal" min="0" step="any" value="1">
+      <span>USD</span>
+      <span class="eq">=</span>
+      <span class="converter-result" id="calcResult">—</span>
+      <select id="calcCurrency"></select>
+    </div>
 
-    <footer>
-      Rates from the fawazahmed0 currency-api (jsDelivr, with a Cloudflare fallback), updated daily. This page fetches live at load and on demand — no key or server required.
-      <span id="fallback-note"></span>
-    </footer>
+    <div class="meta-row">
+      <div class="updated" id="updated"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg><span id="updatedText">···</span></div>
+      <button id="refresh" type="button" aria-label="Refresh rates">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+        Refresh
+      </button>
+    </div>
+
+    <div id="content"></div>
   </div>
 
 <script>
@@ -221,8 +278,54 @@
 
   var contentEl = document.getElementById("content");
   var updatedEl = document.getElementById("updated");
+  var updatedTextEl = document.getElementById("updatedText");
   var refreshBtn = document.getElementById("refresh");
-  var fallbackNote = document.getElementById("fallback-note");
+  var calcAmountEl = document.getElementById("calcAmount");
+  var calcCurrencyEl = document.getElementById("calcCurrency");
+  var calcResultEl = document.getElementById("calcResult");
+
+  var currentRates = null; // most recently loaded rates object (lowercase keys)
+
+  CURRENCIES.forEach(function(c){
+    var opt = document.createElement("option");
+    opt.value = c.code;
+    opt.textContent = c.name;
+    calcCurrencyEl.appendChild(opt);
+  });
+
+  function rateFor(code){
+    if (!currentRates) return null;
+    var c = CURRENCIES.filter(function(x){ return x.code === code; })[0];
+    if (!c) return null;
+    var lc = c.code.toLowerCase();
+    var altLc = c.altCode ? c.altCode.toLowerCase() : null;
+    return currentRates[lc] != null ? currentRates[lc] : (altLc ? currentRates[altLc] : null);
+  }
+
+  function fmtNumber(n){
+    if (n >= 100) return n.toLocaleString(undefined, { maximumFractionDigits: 0 });
+    if (n >= 1) return n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+    return n.toLocaleString(undefined, { maximumFractionDigits: 4 });
+  }
+
+  function updateConverter(){
+    var amount = parseFloat(calcAmountEl.value);
+    var code = calcCurrencyEl.value;
+    if (!currentRates || isNaN(amount)){
+      calcResultEl.innerHTML = '—';
+      return;
+    }
+    var rate = rateFor(code);
+    if (rate == null){
+      calcResultEl.innerHTML = '<span style="font-size:12px; font-weight:400; color: var(--ink-dim);">rate unavailable for ' + code + '</span>';
+      return;
+    }
+    var result = amount * rate;
+    calcResultEl.innerHTML = fmtNumber(result) + ' ' + code;
+  }
+
+  calcAmountEl.addEventListener("input", updateConverter);
+  calcCurrencyEl.addEventListener("change", updateConverter);
 
   function readCache(){
     try{
@@ -234,67 +337,56 @@
     try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e){ /* storage unavailable, skip */ }
   }
 
-  function fmtNumber(n){
-    if (n >= 100) return n.toLocaleString(undefined, { maximumFractionDigits: 0 });
-    if (n >= 1) return n.toLocaleString(undefined, { maximumFractionDigits: 2 });
-    return n.toLocaleString(undefined, { maximumFractionDigits: 4 });
-  }
-
   function timeAgo(ts){
     var diffMin = Math.round((Date.now() - ts) / 60000);
-    if (diffMin < 1) return "just now";
-    if (diffMin < 60) return diffMin + " min ago";
+    if (diffMin < 1) return "now";
+    if (diffMin < 60) return diffMin + "m";
     var diffH = Math.round(diffMin / 60);
-    return diffH + " hr" + (diffH === 1 ? "" : "s") + " ago";
+    if (diffH < 24) return diffH + "h";
+    var diffD = Math.round(diffH / 24);
+    return diffD + "d";
   }
 
   function renderSkeleton(){
-    var regions = ["East Africa", "Southern Africa"];
-    var html = "";
-    regions.forEach(function(region){
-      html += '<div class="region">' + region + '</div><ul class="rates">';
-      CURRENCIES.filter(function(c){ return c.region === region; }).forEach(function(c){
-        html += '<li class="rate-row"><div class="names"><span class="curr-name">' + c.name +
-          '</span><span class="curr-code">' + c.code + '</span></div>' +
-          '<div class="value"><span class="skeleton"></span></div></li>';
-      });
-      html += '</ul>';
+    var html = '<ul class="rates">';
+    CURRENCIES.forEach(function(c){
+      html += '<li class="rate-row"><div class="names"><span class="curr-name">' + c.name +
+        '</span></div><div class="leader"></div>' +
+        '<div class="value"><span class="skeleton"></span></div></li>';
     });
+    html += '</ul>';
     contentEl.innerHTML = html;
   }
 
   function renderRates(rates, asOfTs, isCached){
-    var regions = ["East Africa", "Southern Africa"];
-    var html = "";
-    regions.forEach(function(region){
-      html += '<div class="region">' + region + '</div><ul class="rates">';
-      CURRENCIES.filter(function(c){ return c.region === region; }).forEach(function(c){
-        var lc = c.code.toLowerCase();
-        var altLc = c.altCode ? c.altCode.toLowerCase() : null;
-        var raw = rates[lc] != null ? rates[lc] : (altLc ? rates[altLc] : null);
-        html += '<li class="rate-row"><div class="names"><span class="curr-name">' + c.name +
-          '</span><span class="curr-code">' + c.code + (c.altCode ? " / " + c.altCode : "") + '</span></div>';
-        if (raw != null){
-          html += '<div class="value">' + fmtNumber(raw) + '<span class="unit"> ' + c.code + '</span></div>';
-        } else {
-          html += '<div class="value unavailable">not tracked here — check <a href="https://www.xe.com/currencyconverter/convert/?Amount=1&From=USD&To=' + c.code + '" target="_blank" rel="noopener">xe.com</a></div>';
-        }
-        html += '</li>';
-      });
-      html += '</ul>';
+    var html = '<ul class="rates">';
+    CURRENCIES.forEach(function(c){
+      var lc = c.code.toLowerCase();
+      var altLc = c.altCode ? c.altCode.toLowerCase() : null;
+      var raw = rates[lc] != null ? rates[lc] : (altLc ? rates[altLc] : null);
+      html += '<li class="rate-row"><div class="names"><span class="curr-name">' + c.name + '</span></div><div class="leader"></div>';
+      if (raw != null){
+        html += '<div class="value"><span class="prefix">1$ =</span><span class="num">' + fmtNumber(raw) + '</span><span class="unit">' + c.code + '</span></div>';
+      } else {
+        html += '<div class="value unavailable">not tracked here — check <a href="https://www.xe.com/currencyconverter/convert/?Amount=1&From=USD&To=' + c.code + '" target="_blank" rel="noopener">xe.com</a></div>';
+      }
+      html += '</li>';
     });
+    html += '</ul>';
     contentEl.innerHTML = html;
 
-    if (updatedEl){
-      var label = "Updated " + timeAgo(asOfTs);
-      if (isCached) label += ' <span class="stale">(showing last saved rates)</span>';
-      updatedEl.innerHTML = label;
+    if (updatedTextEl){
+      updatedTextEl.textContent = timeAgo(asOfTs);
+      updatedEl.classList.toggle("stale", !!isCached);
     }
   }
 
   function renderError(){
-    contentEl.innerHTML = '<div class="subtitle" style="margin-top:8px;">Could not reach the rates service right now. Try refresh, or check your connection.</div>';
-    if (updatedEl) updatedEl.textContent = "Not updated";
+    contentEl.innerHTML = '<div style="color:var(--ink-dim); font-size:12px; margin-top:8px;">Could not reach the rates service right now. Try refresh, or check your connection.</div>';
+    if (updatedTextEl){
+      updatedTextEl.textContent = "—";
+      updatedEl.classList.add("stale");
+    }
   }
 
   function fetchFrom(url){
@@ -313,12 +405,16 @@
         if (!rates) throw new Error("no rates");
         var now = Date.now();
         writeCache({ rates: rates, ts: now });
+        currentRates = rates;
         renderRates(rates, now, false);
+        updateConverter();
       })
       .catch(function(){
         var cached = readCache();
         if (cached){
+          currentRates = cached.rates;
           renderRates(cached.rates, cached.ts, true);
+          updateConverter();
         } else {
           renderError();
         }
@@ -332,7 +428,9 @@
 
   var cached = readCache();
   if (cached){
+    currentRates = cached.rates;
     renderRates(cached.rates, cached.ts, true);
+    updateConverter();
   } else {
     renderSkeleton();
   }
