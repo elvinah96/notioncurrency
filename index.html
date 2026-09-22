@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>USD Exchange — East &amp; Southern Africa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #12172b;
+    --bg-raised: #171e38;
+    --hairline: rgba(214, 169, 74, 0.18);
+    --ink: #f1ede2;
+    --ink-dim: #9aa3c2;
+    --gold: #d6a94a;
+    --sage: #7fa98c;
+    --err: #d97b6c;
+  }
+  *{ box-sizing: border-box; }
+  html, body{
+    margin: 0;
+    padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+    -webkit-font-smoothing: antialiased;
+  }
+  body{
+    padding: clamp(20px, 5vw, 40px);
+    min-height: 100vh;
+  }
+  .board{
+    max-width: 640px;
+    margin: 0 auto;
+  }
+  header{
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 28px;
+  }
+  h1{
+    font-family: 'Fraunces', serif;
+    font-weight: 500;
+    font-optical-sizing: auto;
+    font-size: clamp(26px, 4.2vw, 34px);
+    line-height: 1.15;
+    margin: 0;
+    color: var(--ink);
+  }
+  .subtitle{
+    color: var(--ink-dim);
+    font-size: 13px;
+    line-height: 1.5;
+    max-width: 46ch;
+  }
+  .meta-row{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--hairline);
+  }
+  .updated{
+    font-size: 11px;
+    color: var(--ink-dim);
+    letter-spacing: 0.01em;
+  }
+  .updated .stale{ color: var(--err); }
+  button#refresh{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: 1px solid var(--hairline);
+    color: var(--ink);
+    font-family: inherit;
+    font-size: 11px;
+    padding: 7px 12px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+  button#refresh:hover{ border-color: var(--gold); color: var(--gold); }
+  button#refresh:focus-visible{ outline: 2px solid var(--gold); outline-offset: 2px; }
+  button#refresh svg{
+    width: 12px; height: 12px;
+    transition: transform 0.5s ease;
+  }
+  button#refresh.spinning svg{ animation: spin 0.8s linear infinite; }
+  @keyframes spin{ to{ transform: rotate(360deg); } }
+
+  .region{
+    font-size: 11px;
+    color: var(--sage);
+    margin: 22px 0 6px;
+    padding-bottom: 6px;
+  }
+  .region:first-of-type{ margin-top: 4px; }
+
+  ul.rates{
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  li.rate-row{
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: baseline;
+    gap: 4px 16px;
+    padding: 13px 0;
+    border-bottom: 1px solid var(--hairline);
+  }
+  li.rate-row:last-child{ border-bottom: none; }
+  .names{
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+  .curr-name{
+    font-size: 14px;
+    color: var(--ink);
+  }
+  .curr-code{
+    font-size: 11px;
+    color: var(--ink-dim);
+    letter-spacing: 0.03em;
+  }
+  .value{
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+    font-size: clamp(18px, 3.4vw, 22px);
+    color: var(--gold);
+    text-align: right;
+    white-space: nowrap;
+  }
+  .value .unit{
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--ink-dim);
+    margin-left: 4px;
+  }
+  .value.unavailable{
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--ink-dim);
+    font-style: normal;
+  }
+  .value.unavailable a{ color: var(--sage); text-decoration: none; border-bottom: 1px dotted var(--sage); }
+
+  .skeleton{
+    display: inline-block;
+    width: 84px;
+    height: 18px;
+    background: linear-gradient(90deg, var(--bg-raised) 0%, rgba(255,255,255,0.06) 50%, var(--bg-raised) 100%);
+    background-size: 200% 100%;
+    animation: shimmer 1.2s ease infinite;
+    border-radius: 2px;
+  }
+  @keyframes shimmer{ 0%{ background-position: 200% 0; } 100%{ background-position: -200% 0; } }
+
+  footer{
+    margin-top: 26px;
+    padding-top: 14px;
+    border-top: 1px solid var(--hairline);
+    font-size: 10.5px;
+    color: var(--ink-dim);
+    line-height: 1.6;
+  }
+  footer a{ color: var(--sage); }
+
+  @media (max-width: 420px){
+    .curr-name{ font-size: 13px; }
+    .value{ font-size: 17px; }
+  }
+</style>
+</head>
+<body>
+  <div class="board">
+    <header>
+      <h1>US Dollar, converted</h1>
+      <div class="subtitle">Live mid-market rates for nine East and Southern African currencies, quoted per one US dollar.</div>
+      <div class="meta-row">
+        <div class="updated" id="updated">Loading rates…</div>
+        <button id="refresh" type="button" aria-label="Refresh rates">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+          Refresh
+        </button>
+      </div>
+    </header>
+
+    <div id="content"></div>
+
+    <footer>
+      Rates from the fawazahmed0 currency-api (jsDelivr, with a Cloudflare fallback), updated daily. This page fetches live at load and on demand — no key or server required.
+      <span id="fallback-note"></span>
+    </footer>
+  </div>
+
+<script>
+(function(){
+  var CURRENCIES = [
+    { name: "Rwandan Franc",     code: "RWF", region: "East Africa" },
+    { name: "Tanzanian Shilling",code: "TZS", region: "East Africa" },
+    { name: "Kenyan Shilling",   code: "KES", region: "East Africa" },
+    { name: "Malawian Kwacha",   code: "MWK", region: "Southern Africa" },
+    { name: "Mozambican Metical",code: "MZN", region: "Southern Africa" },
+    { name: "Zimbabwean Dollar", code: "ZWG", altCode: "ZWL", region: "Southern Africa" },
+    { name: "Zambian Kwacha",    code: "ZMW", region: "Southern Africa" },
+    { name: "Botswana Pula",     code: "BWP", region: "Southern Africa" },
+    { name: "Namibian Dollar",   code: "NAD", region: "Southern Africa" }
+  ];
+  var PRIMARY_URL = "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json";
+  var FALLBACK_URL = "https://latest.currency-api.pages.dev/v1/currencies/usd.json";
+  var STORAGE_KEY = "usd-africa-rates-cache-v2";
+
+  var contentEl = document.getElementById("content");
+  var updatedEl = document.getElementById("updated");
+  var refreshBtn = document.getElementById("refresh");
+  var fallbackNote = document.getElementById("fallback-note");
+
+  function readCache(){
+    try{
+      var raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch(e){ return null; }
+  }
+  function writeCache(data){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch(e){ /* storage unavailable, skip */ }
+  }
+
+  function fmtNumber(n){
+    if (n >= 100) return n.toLocaleString(undefined, { maximumFractionDigits: 0 });
+    if (n >= 1) return n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+    return n.toLocaleString(undefined, { maximumFractionDigits: 4 });
+  }
+
+  function timeAgo(ts){
+    var diffMin = Math.round((Date.now() - ts) / 60000);
+    if (diffMin < 1) return "just now";
+    if (diffMin < 60) return diffMin + " min ago";
+    var diffH = Math.round(diffMin / 60);
+    return diffH + " hr" + (diffH === 1 ? "" : "s") + " ago";
+  }
+
+  function renderSkeleton(){
+    var regions = ["East Africa", "Southern Africa"];
+    var html = "";
+    regions.forEach(function(region){
+      html += '<div class="region">' + region + '</div><ul class="rates">';
+      CURRENCIES.filter(function(c){ return c.region === region; }).forEach(function(c){
+        html += '<li class="rate-row"><div class="names"><span class="curr-name">' + c.name +
+          '</span><span class="curr-code">' + c.code + '</span></div>' +
+          '<div class="value"><span class="skeleton"></span></div></li>';
+      });
+      html += '</ul>';
+    });
+    contentEl.innerHTML = html;
+  }
+
+  function renderRates(rates, asOfTs, isCached){
+    var regions = ["East Africa", "Southern Africa"];
+    var html = "";
+    regions.forEach(function(region){
+      html += '<div class="region">' + region + '</div><ul class="rates">';
+      CURRENCIES.filter(function(c){ return c.region === region; }).forEach(function(c){
+        var lc = c.code.toLowerCase();
+        var altLc = c.altCode ? c.altCode.toLowerCase() : null;
+        var raw = rates[lc] != null ? rates[lc] : (altLc ? rates[altLc] : null);
+        html += '<li class="rate-row"><div class="names"><span class="curr-name">' + c.name +
+          '</span><span class="curr-code">' + c.code + (c.altCode ? " / " + c.altCode : "") + '</span></div>';
+        if (raw != null){
+          html += '<div class="value">' + fmtNumber(raw) + '<span class="unit"> ' + c.code + '</span></div>';
+        } else {
+          html += '<div class="value unavailable">not tracked here — check <a href="https://www.xe.com/currencyconverter/convert/?Amount=1&From=USD&To=' + c.code + '" target="_blank" rel="noopener">xe.com</a></div>';
+        }
+        html += '</li>';
+      });
+      html += '</ul>';
+    });
+    contentEl.innerHTML = html;
+
+    if (updatedEl){
+      var label = "Updated " + timeAgo(asOfTs);
+      if (isCached) label += ' <span class="stale">(showing last saved rates)</span>';
+      updatedEl.innerHTML = label;
+    }
+  }
+
+  function renderError(){
+    contentEl.innerHTML = '<div class="subtitle" style="margin-top:8px;">Could not reach the rates service right now. Try refresh, or check your connection.</div>';
+    if (updatedEl) updatedEl.textContent = "Not updated";
+  }
+
+  function fetchFrom(url){
+    return fetch(url).then(function(res){
+      if (!res.ok) throw new Error("bad response");
+      return res.json();
+    });
+  }
+
+  function fetchRates(isManual){
+    if (isManual) refreshBtn.classList.add("spinning");
+    fetchFrom(PRIMARY_URL)
+      .catch(function(){ return fetchFrom(FALLBACK_URL); })
+      .then(function(data){
+        var rates = data && data.usd;
+        if (!rates) throw new Error("no rates");
+        var now = Date.now();
+        writeCache({ rates: rates, ts: now });
+        renderRates(rates, now, false);
+      })
+      .catch(function(){
+        var cached = readCache();
+        if (cached){
+          renderRates(cached.rates, cached.ts, true);
+        } else {
+          renderError();
+        }
+      })
+      .finally(function(){
+        if (isManual) refreshBtn.classList.remove("spinning");
+      });
+  }
+
+  refreshBtn.addEventListener("click", function(){ fetchRates(true); });
+
+  var cached = readCache();
+  if (cached){
+    renderRates(cached.rates, cached.ts, true);
+  } else {
+    renderSkeleton();
+  }
+  fetchRates(false);
+})();
+</script>
+</body>
+</html>
