@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Quick Currency Overview</title>
+<title>Currency Overview</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -39,13 +39,13 @@
     padding: clamp(12px, 3vw, 18px);
   }
   header{
-    margin-bottom: 12px;
+    margin-bottom: 14px;
   }
   h1{
     font-family: 'Fraunces', serif;
     font-weight: 500;
     font-optical-sizing: auto;
-    font-size: clamp(18px, 3vw, 22px);
+    font-size: clamp(22px, 3.4vw, 27px);
     line-height: 1.15;
     margin: 0;
     color: var(--ink);
@@ -54,20 +54,20 @@
   .converter{
     display: flex;
     align-items: center;
-    gap: 6px;
-    margin-bottom: 12px;
-    font-size: 11px;
+    gap: 7px;
+    margin-bottom: 14px;
+    font-size: 13px;
     color: var(--ink-dim);
   }
   .converter input{
     font-family: inherit;
-    font-size: 11.5px;
+    font-size: 14px;
     color: var(--ink);
     background: var(--bg-raised);
     border: 1px solid var(--hairline);
     border-radius: 5px;
-    padding: 3px 5px;
-    width: 44px;
+    padding: 4px 6px;
+    width: 74px;
     flex: 0 0 auto;
   }
   .converter input:focus{
@@ -79,7 +79,7 @@
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 6px;
+    gap: 7px;
     padding-top: 8px;
     padding-bottom: 3px;
     border-top: 1px solid var(--hairline);
@@ -88,11 +88,11 @@
     display: flex;
     align-items: center;
     gap: 3px;
-    font-size: 8px;
+    font-size: 9.5px;
     color: var(--ink-dim);
     letter-spacing: 0.01em;
   }
-  .updated svg{ width: 8px; height: 8px; flex-shrink: 0; }
+  .updated svg{ width: 9px; height: 9px; flex-shrink: 0; }
   .updated.stale{ color: var(--err); }
   button#refresh{
     display: flex;
@@ -102,8 +102,8 @@
     border: 1px solid var(--hairline);
     color: var(--ink);
     font-family: inherit;
-    font-size: 7.5px;
-    padding: 2px 5px;
+    font-size: 9px;
+    padding: 3px 6px;
     border-radius: 4px;
     cursor: pointer;
     transition: border-color 0.15s ease, color 0.15s ease;
@@ -111,70 +111,57 @@
   button#refresh:hover{ border-color: var(--gold); color: var(--gold); }
   button#refresh:focus-visible{ outline: 2px solid var(--gold); outline-offset: 2px; }
   button#refresh svg{
-    width: 7px; height: 7px;
+    width: 8px; height: 8px;
     transition: transform 0.5s ease;
   }
   button#refresh.spinning svg{ animation: spin 0.8s linear infinite; }
   @keyframes spin{ to{ transform: rotate(360deg); } }
 
   ul.rates{
+    display: grid;
+    grid-template-columns: max-content max-content;
+    justify-content: start;
+    column-gap: 10px;
+    row-gap: 3px;
     list-style: none;
     margin: 0;
     padding: 0;
   }
-  li.rate-row{
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    align-items: baseline;
-    column-gap: 6px;
-    padding: 5px 0;
+  li.rate-row{ display: contents; }
+  li.rate-row .names,
+  li.rate-row .value{
     border-bottom: 1px solid var(--hairline);
+    padding-bottom: 5px;
   }
-  li.rate-row:last-child{ border-bottom: none; }
+  li.rate-row:last-child .names,
+  li.rate-row:last-child .value{
+    border-bottom: none;
+  }
   .names{
     min-width: 0;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
   .curr-name{
-    font-size: 11.5px;
+    font-size: 14.5px;
     color: var(--ink);
   }
-  .leader{
-    border-bottom: 1px dotted var(--hairline);
-    margin-bottom: 3px;
-    height: 0;
-    min-width: 12px;
-  }
   .value{
-    display: grid;
-    grid-template-columns: 1fr auto;
+    display: flex;
     align-items: baseline;
-    column-gap: 4px;
+    gap: 5px;
     font-variant-numeric: tabular-nums;
     font-weight: 600;
-    font-size: 13.5px;
+    font-size: 16px;
     color: var(--gold);
-    width: 118px;
-    justify-self: end;
-  }
-  .value .num{
-    text-align: right;
     white-space: nowrap;
   }
   .value .unit{
-    font-size: 9px;
+    font-size: 10.5px;
     font-weight: 400;
     color: var(--ink-dim);
-    text-align: left;
-    white-space: nowrap;
   }
   .value.unavailable{
-    display: block;
-    width: auto;
-    max-width: 180px;
-    font-size: 10px;
+    font-size: 11px;
     font-weight: 400;
     color: var(--ink-dim);
     font-style: normal;
@@ -183,25 +170,20 @@
 
   .skeleton{
     display: inline-block;
-    grid-column: 1 / -1;
     width: 70px;
-    height: 14px;
+    height: 15px;
     background: linear-gradient(90deg, var(--bg-raised) 0%, rgba(18,23,43,0.06) 50%, var(--bg-raised) 100%);
     background-size: 200% 100%;
     animation: shimmer 1.2s ease infinite;
     border-radius: 2px;
   }
   @keyframes shimmer{ 0%{ background-position: 200% 0; } 100%{ background-position: -200% 0; } }
-
-  @media (max-width: 420px){
-    .value{ width: 98px; }
-  }
 </style>
 </head>
 <body>
   <div class="board">
     <header>
-      <h1>Quick currency overview</h1>
+      <h1>Currency Overview</h1>
     </header>
 
     <div class="converter">
@@ -277,7 +259,7 @@
     var html = '<ul class="rates">';
     CURRENCIES.forEach(function(c){
       html += '<li class="rate-row"><div class="names"><span class="curr-name">' + c.name +
-        '</span></div><div class="leader"></div>' +
+        '</span></div>' +
         '<div class="value"><span class="skeleton"></span></div></li>';
     });
     html += '</ul>';
@@ -300,7 +282,7 @@
       var lc = c.code.toLowerCase();
       var altLc = c.altCode ? c.altCode.toLowerCase() : null;
       var raw = rates[lc] != null ? rates[lc] : (altLc ? rates[altLc] : null);
-      html += '<li class="rate-row"><div class="names"><span class="curr-name">' + c.name + '</span></div><div class="leader"></div>';
+      html += '<li class="rate-row"><div class="names"><span class="curr-name">' + c.name + '</span></div>';
       if (raw != null){
         html += '<div class="value"><span class="num">' + fmtNumber(raw * amount) + '</span><span class="unit">' + c.code + '</span></div>';
       } else {
@@ -322,7 +304,7 @@
   });
 
   function renderError(){
-    contentEl.innerHTML = '<div style="color:var(--ink-dim); font-size:11px; margin-top:6px;">Could not reach the rates service right now. Try refresh, or check your connection.</div>';
+    contentEl.innerHTML = '<div style="color:var(--ink-dim); font-size:12px; margin-top:6px;">Could not reach the rates service right now. Try refresh, or check your connection.</div>';
     if (updatedTextEl){
       updatedTextEl.textContent = "—";
       updatedEl.classList.add("stale");
