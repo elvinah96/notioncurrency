@@ -71,9 +71,26 @@
     width: 74px;
     flex: 0 0 auto;
   }
-  .converter input:focus{
+  .converter select{
+    font-family: inherit;
+    font-size: 13px;
+    color: var(--ink);
+    background: var(--bg-raised);
+    border: 1px solid var(--hairline);
+    border-radius: 5px;
+    padding: 4px 6px;
+    flex: 0 1 auto;
+    min-width: 0;
+  }
+  .converter input:focus, .converter select:focus{
     outline: none;
     border-color: var(--gold);
+  }
+  .gbp-ref{
+    font-size: 10.5px;
+    color: var(--ink-dim);
+    margin: -8px 0 14px;
+    font-variant-numeric: tabular-nums;
   }
 
   .meta-row{
@@ -151,12 +168,25 @@
     display: flex;
     align-items: baseline;
     gap: 5px;
+    white-space: nowrap;
+  }
+  .row-input{
+    font-family: inherit;
     font-variant-numeric: tabular-nums;
     font-weight: 600;
     font-size: 16px;
     color: var(--gold);
-    white-space: nowrap;
+    background: transparent;
+    border: none;
+    border-bottom: 1px dashed transparent;
+    padding: 0 0 1px;
+    width: 82px;
+    text-align: right;
+    -moz-appearance: textfield;
   }
+  .row-input::-webkit-outer-spin-button,
+  .row-input::-webkit-inner-spin-button{ -webkit-appearance: none; margin: 0; }
+  .row-input:focus{ outline: none; border-bottom-color: var(--gold); }
   .value .unit{
     font-size: 10.5px;
     font-weight: 400;
@@ -190,8 +220,13 @@
 
     <div class="converter">
       <input id="calcAmount" type="number" inputmode="decimal" min="0" step="any" value="1">
-      <span>USD →</span>
+      <select id="baseCurrency">
+        <option value="usd">USD</option>
+        <option value="gbp">GBP</option>
+      </select>
+      <span>→</span>
     </div>
+    <div class="gbp-ref" id="gbpRef">≈ — GBP</div>
 
     <div class="meta-row">
       <div class="updated" id="updated"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg><span id="updatedText">···</span></div>
@@ -226,15 +261,25 @@
   var updatedTextEl = document.getElementById("updatedText");
   var refreshBtn = document.getElementById("refresh");
   var calcAmountEl = document.getElementById("calcAmount");
+  var baseCurrencyEl = document.getElementById("baseCurrency");
+  var gbpRefEl = document.getElementById("gbpRef");
 
   var currentRates = null;
-  var currentTs = null;
-  var currentIsCached = false;
+  var rowInputs = {};
+  var usdAmount = 1; // canonical amount, expressed in USD, that every field derives its display from
 
-  function fmtNumber(n){
-    if (n >= 100) return n.toLocaleString(undefined, { maximumFractionDigits: 0 });
-    if (n >= 1) return n.toLocaleString(undefined, { maximumFractionDigits: 2 });
-    return n.toLocaleString(undefined, { maximumFractionDigits: 4 });
+  function rateFor(rates, code){
+    var c = CURRENCIES.filter(function(x){ return x.code === code; })[0];
+    if (!c || !rates) return null;
+    var lc = c.code.toLowerCase();
+    var altLc = c.altCode ? c.altCode.toLowerCase() : null;
+    return rates[lc] != null ? rates[lc] : (altLc ? rates[altLc] : null);
+  }
+
+  function formatPlain(n){
+    if (!isFinite(n)) return "";
+    var decimals = n >= 100 ? 0 : (n >= 1 ? 2 : 4);
+    return parseFloat(n.toFixed(decimals)).toString();
   }
 
   function readCache(){
@@ -268,25 +313,15 @@
     contentEl.innerHTML = html;
   }
 
-  function currentAmount(){
-    var amount = parseFloat(calcAmountEl.value);
-    return isNaN(amount) ? 1 : amount;
-  }
-
-  function renderRates(rates, asOfTs, isCached){
-    currentRates = rates;
-    currentTs = asOfTs;
-    currentIsCached = isCached;
-
-    var amount = currentAmount();
+  // Rebuilds the row DOM (called only when fresh rate data arrives, never on keystrokes).
+  function buildRows(rates){
+    rowInputs = {};
     var html = '<ul class="rates">';
     CURRENCIES.forEach(function(c){
-      var lc = c.code.toLowerCase();
-      var altLc = c.altCode ? c.altCode.toLowerCase() : null;
-      var raw = rates[lc] != null ? rates[lc] : (altLc ? rates[altLc] : null);
+      var raw = rateFor(rates, c.code);
       html += '<li class="rate-row"><div class="names"><span class="curr-name">' + c.name + '</span></div>';
       if (raw != null){
-        html += '<div class="value"><span class="num">' + fmtNumber(raw * amount) + '</span><span class="unit">' + c.code + '</span></div>';
+        html += '<div class="value"><input type="number" class="row-input" data-code="' + c.code + '" inputmode="decimal" step="any"><span class="unit">' + c.code + '</span></div>';
       } else {
         html += '<div class="value unavailable">n/a — check <a href="https://www.xe.com/currencyconverter/convert/?Amount=1&From=USD&To=' + c.code + '" target="_blank" rel="noopener">xe.com</a></div>';
       }
@@ -295,6 +330,48 @@
     html += '</ul>';
     contentEl.innerHTML = html;
 
+    CURRENCIES.forEach(function(c){
+      var el = contentEl.querySelector('input[data-code="' + c.code + '"]');
+      if (!el) return;
+      rowInputs[c.code] = el;
+      el.addEventListener("input", function(){
+        var val = parseFloat(el.value);
+        if (isNaN(val)) return;
+        var rate = rateFor(currentRates, c.code);
+        if (rate == null) return;
+        usdAmount = val / rate;
+        redrawAll(el);
+      });
+    });
+  }
+
+  // Pushes the canonical usdAmount into every field except the one currently being edited.
+  function redrawAll(skipEl){
+    if (calcAmountEl !== skipEl){
+      var base = baseCurrencyEl.value;
+      var gbpRate = currentRates ? currentRates["gbp"] : null;
+      var topVal = (base === "gbp" && gbpRate != null) ? usdAmount * gbpRate : usdAmount;
+      calcAmountEl.value = formatPlain(topVal);
+    }
+    CURRENCIES.forEach(function(c){
+      var inp = rowInputs[c.code];
+      if (!inp || inp === skipEl) return;
+      var rate = rateFor(currentRates, c.code);
+      if (rate == null) return;
+      inp.value = formatPlain(usdAmount * rate);
+    });
+
+    if (gbpRefEl){
+      var gbpRate = currentRates ? currentRates["gbp"] : null;
+      gbpRefEl.textContent = (gbpRate != null) ? "≈ " + formatPlain(usdAmount * gbpRate) + " GBP" : "≈ — GBP";
+    }
+  }
+
+  function renderRates(rates, asOfTs, isCached){
+    currentRates = rates;
+    buildRows(rates);
+    redrawAll(null);
+
     if (updatedTextEl){
       updatedTextEl.textContent = timeAgo(asOfTs);
       updatedEl.classList.toggle("stale", !!isCached);
@@ -302,7 +379,16 @@
   }
 
   calcAmountEl.addEventListener("input", function(){
-    if (currentRates) renderRates(currentRates, currentTs, currentIsCached);
+    var val = parseFloat(calcAmountEl.value);
+    if (isNaN(val)) return;
+    var base = baseCurrencyEl.value;
+    var gbpRate = currentRates ? currentRates["gbp"] : null;
+    usdAmount = (base === "gbp" && gbpRate != null) ? val / gbpRate : val;
+    redrawAll(calcAmountEl);
+  });
+
+  baseCurrencyEl.addEventListener("change", function(){
+    redrawAll(null);
   });
 
   function renderError(){
